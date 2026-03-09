@@ -1,0 +1,19 @@
+{
+  "name": "cartify",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "npm@10.9.3",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "turbo": "^2.8.3"
+  }
+}
