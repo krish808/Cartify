@@ -1,42 +1,61 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { Button, Input, Container, Section } from "@cartify/ui";
 import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { login } = useAuth();
-  const navigate = useNavigate();
 
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await login(form.email, form.password);
+      await login(email, password);
+      setEmail("");
+      setPassword("");
+
       navigate("/");
     } catch (err) {
       alert("Invalid credentials");
     }
   };
-
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Login</h2>
-      <input
-        type="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={(e) => setForm({ ...form, email: e.target.value })}
-      />
-      <input
-        type="password"
-        placeholder="Password"
-        value={form.password}
-        onChange={(e) => setForm({ ...form, password: e.target.value })}
-      />
-      <button type="submit">Login</button>
-    </form>
+    <Section className="py-10 min-h-[50vh] flex items-center justify-center bg-gray-50">
+      <Container>
+        <div className=" py-10 mx-auto bg-white shadow-md rounded-xl p-10">
+          <h2 className="text-3xl font-semibold text-center mb-8 ">
+            Login to Cartify
+          </h2>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            <Input
+              label="Email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <Input
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+            <Button type="submit" className="w-full py-3 text-lg">
+              Login
+            </Button>
+          </form>
+          <p className="text-sm text-gray-500 text-center mt-6">
+            Don't have an account ?{" "}
+            <span className="text-blue-600 cursor-pointer">Sign up</span>
+          </p>
+        </div>
+      </Container>
+    </Section>
   );
 }
