@@ -41,7 +41,7 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      const { data } = await api.get("/cart");
+      const { data } = await api.get("/api/cart");
       setCart(data);
     } catch (error) {
       console.log(error.response?.data?.message || error.message);
@@ -56,7 +56,7 @@ export const CartProvider = ({ children }) => {
 
     try {
       for (const item of guestCart) {
-        await api.post("/cart", {
+        await api.post("/api/cart", {
           productId: item.productId,
           quantity: item.quantity,
         });
@@ -100,7 +100,7 @@ export const CartProvider = ({ children }) => {
     try {
       setLoading(true);
 
-      const { data } = await api.post("/cart", {
+      const { data } = await api.post("/api/cart", {
         productId: product._id,
         quantity,
       });
@@ -131,7 +131,7 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      const { data } = await api.delete(`/cart/${productId}`);
+      const { data } = await api.delete(`/api/cart/${productId}`);
       setCart(data);
     } catch (error) {
       console.error(error.response?.data?.message);

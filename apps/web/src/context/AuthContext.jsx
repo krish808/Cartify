@@ -16,8 +16,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const res = await api.post("/api/auth/login", { email, password });
 
-      console.log("Login response:", res.data);
-
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("user", JSON.stringify(res.data.user));
       setUser(res.data.user);
