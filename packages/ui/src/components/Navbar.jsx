@@ -33,12 +33,12 @@ export default function Navbar({
   }, []);
 
   return (
-    <nav className=" text-black shadow-md">
+    <nav className="bg-white text-black shadow-md">
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
         {/* Logo */}
         <button
           onClick={() => onNavigate("/")}
-          className="text-2xl font-bold tracking-wide"
+          className="text-2xl font-bold tracking-wide cursor-pointer"
         >
           Cartify
         </button>
@@ -57,7 +57,7 @@ export default function Navbar({
           />
           <button
             type="submit"
-            className=" px-5 rounded-r-md text-black font-semibold hover:bg-blue-500 transition"
+            className="bg-yellow-400 px-5 rounded-r-md text-black font-semibold hover:bg-yellow-500 transition"
           >
             🔍
           </button>
@@ -69,7 +69,7 @@ export default function Navbar({
           <div className="relative">
             <button
               onClick={() => onNavigate("/cart")}
-              className="hover:text-gray-300 transition"
+              className="hover:text-gray-300 transition cursor-pointer"
             >
               🛒 Cart
             </button>
@@ -86,7 +86,7 @@ export default function Navbar({
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2 hover:text-gray-300 transition"
+                className="flex items-center gap-2 hover:text-gray-300 transition cursor-pointer"
               >
                 <span className="font-medium">Hi, {user.name}</span>
                 <span className="text-sm">▼</span>
@@ -96,21 +96,21 @@ export default function Navbar({
                 <div className="absolute right-0 mt-3 w-44 bg-white text-black rounded-lg shadow-lg py-2">
                   <button
                     onClick={() => onNavigate("/profile")}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm cursor-pointer"
                   >
                     Profile
                   </button>
 
                   <button
                     onClick={() => onNavigate("/orders")}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm cursor-pointer"
                   >
                     Orders
                   </button>
 
                   <button
                     onClick={onLogout}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-500"
+                    className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-red-500 cursor-pointer"
                   >
                     Logout
                   </button>
@@ -120,7 +120,7 @@ export default function Navbar({
           ) : (
             <button
               onClick={() => onNavigate("/login")}
-              className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-md text-sm transition"
+              className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-md text-sm transition cursor-pointer"
             >
               Login
             </button>
@@ -130,14 +130,15 @@ export default function Navbar({
         {/* Mobile Hamburger */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="md:hidden text-2xl"
+          className="md:hidden text-2xl cursor-pointer"
         >
           ☰
         </button>
       </div>
 
       {/* 🔥 Mobile Search */}
-      <div className="md:hidden px-6 pb-4">
+
+      <div className="md:hidden px-6 pb-4 border-t">
         <form onSubmit={handleSearchSubmit} className="flex">
           <input
             type="text"
@@ -157,17 +158,17 @@ export default function Navbar({
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-gray-900 px-6 pb-4 space-y-4">
+        <div className="md:hidden bg-white border-t px-6 pb-4 space-y-4">
           <button
             onClick={() => onNavigate("/")}
-            className="block hover:text-gray-300"
+            className="block w-full text-left py-2 text-gray-700 hover:text-blue-600 cursor-pointer"
           >
             Home
           </button>
 
           <button
             onClick={() => onNavigate("/cart")}
-            className="block hover:text-gray-300"
+            className="block w-full text-left py-2 text-gray-700 hover:text-blue-600 cursor-pointer"
           >
             🛒 Cart ({totalItems})
           </button>
@@ -176,21 +177,21 @@ export default function Navbar({
             <>
               <button
                 onClick={() => onNavigate("/profile")}
-                className="block hover:text-gray-300"
+                className="block w-full text-left py-2 text-gray-700 hover:text-blue-600 cursor-pointer"
               >
                 Profile
               </button>
 
               <button
                 onClick={() => onNavigate("/orders")}
-                className="block hover:text-gray-300"
+                className="block w-full text-left py-2 text-gray-700 hover:text-blue-600 cursor-pointer"
               >
                 Orders
               </button>
 
               <button
                 onClick={onLogout}
-                className="w-full bg-red-500 hover:bg-red-600 px-4 py-2 rounded-md text-sm"
+                className="w-full bg-red-500 text-white py-2 rounded-md cursor-pointer"
               >
                 Logout
               </button>
@@ -198,7 +199,7 @@ export default function Navbar({
           ) : (
             <button
               onClick={() => onNavigate("/login")}
-              className="w-full bg-green-500 hover:bg-green-600 px-4 py-2 rounded-md text-sm"
+              className="w-full bg-green-500 text-white py-2 rounded-md cursor-pointer"
             >
               Login
             </button>
