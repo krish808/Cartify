@@ -58,7 +58,7 @@ export default function Home() {
 
   //PAGINATION
 
-  const totalPages = Math.ceil(products.length / productsPerPage);
+  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
   const startIndex = (currentPage - 1) * productsPerPage;
   const endIndex = startIndex + productsPerPage;
@@ -68,11 +68,11 @@ export default function Home() {
   return (
     <Container>
       <h1 className="text-3xl font-bold mb-8 text-center">All Products</h1>
-      <div className="flex px-0 gap-8">
+      <div className="flex flex-col md:flex-row gap-8">
         <ProductFilters categories={categories} />
         <div className="flex-1">
           {loading && (
-            <div className="grid gap-8 sm:grid-cls-2 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid gap-6 grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (
                 <SkeletonCard key={i} />
               ))}
@@ -92,21 +92,23 @@ export default function Home() {
                 ))}
               </div>
 
-              <div className="flex justify-center gap-3 mt-8">
+              <div className="flex justify-center items-center gap-4 mt-8">
                 <button
                   disabled={currentPage === 1}
                   onClick={() => setCurrentPage((p) => p - 1)}
+                  className="px-4 py-2 border rounded disabled:opacity-50"
                 >
                   Prev
                 </button>
 
-                <span className="px-4 py-2">
+                <span className="font-medium">
                   Page{currentPage}/{totalPages}
                 </span>
 
                 <button
                   disabled={currentPage === totalPages}
                   onClick={() => setCurrentPage((p) => p + 1)}
+                  className="px-4 py-2 border rounded disabled:opacity-50"
                 >
                   Next
                 </button>
