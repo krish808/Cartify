@@ -11,5 +11,6 @@ export const refreshToken = async () => {
 };
 
 export const logoutUser = async () => {
-  await api.post("/api/auth/logout");
+  const res = await api.post("/api/auth/logout", {}, { withCredentials: true });
+  return res.data;
 };

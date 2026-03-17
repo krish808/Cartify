@@ -5,13 +5,16 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import ProductDetails from "./pages/ProductDetails";
 import CartPage from "./pages/CartPage";
 import { AppLayout, Footer } from "@cartify/ui";
-import { useCart } from "./context/CartContext";
-import { useAuth } from "./context/AuthContext";
+import Products from "./pages/Products";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "./store/authSlice";
 
 export default function App() {
-  const { cart } = useCart();
-  const { user, logout } = useAuth();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const cart = useSelector((state) => state.cart);
+  const user = useSelector((state) => state.auth.user);
 
   const totalItems = cart.items.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -19,12 +22,16 @@ export default function App() {
     navigate(`/?search=${query}`);
   };
 
+  const handleLogout = () => {
+    dispatch(logout());
+  };
+
   return (
     <>
       <AppLayout
         user={user}
         totalItems={totalItems}
-        onLogout={logout}
+        onLogout={handleLogout}
         onNavigate={navigate}
         onSearch={handleSearch}
       />
@@ -39,6 +46,7 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<CartPage />} />
       </Routes>
