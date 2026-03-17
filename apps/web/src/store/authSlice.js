@@ -14,23 +14,16 @@ export const login = createAsyncThunk(
 );
 
 // LOGOUT
-// authSlice.js
-export const logout = createAsyncThunk(
-  "auth/logout",
-  async (_, { rejectWithValue }) => {
-    try {
-      await logoutUser();
-    } catch (err) {
-      console.error("Logout error:", err);
-      return rejectWithValue(err.response?.data?.message);
-      // Even if backend fails, clear local state
-    } finally {
-      // Always clean up locally regardless of server response
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("user");
-    }
-  },
-);
+export const logout = createAsyncThunk("auth/logout", async () => {
+  try {
+    await logoutUser();
+  } catch (err) {
+    console.error("Logout error:", err);
+  } finally {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("user");
+  }
+});
 
 const authSlice = createSlice({
   name: "auth",
@@ -48,23 +41,28 @@ const authSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
         state.isAuthenticated = true;
-
-        // ✅ store token
         localStorage.setItem("accessToken", action.payload.accessToken);
         localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
-
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
-
+      // ✅ Clear state immediately on click — don't wait for server
+      .addCase(logout.pending, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+      })
       .addCase(logout.fulfilled, (state) => {
+        state.user = null;
+        state.isAuthenticated = false;
+      })
+      // ✅ Clear state even if server call fails
+      .addCase(logout.rejected, (state) => {
         state.user = null;
         state.isAuthenticated = false;
       });
