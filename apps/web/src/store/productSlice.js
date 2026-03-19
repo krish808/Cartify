@@ -5,7 +5,7 @@ import { getAllProducts } from "../services/productService";
 export const fetchProducts = createAsyncThunk(
   "product/fetchProduct",
   async () => {
-    const data = await getAllProducts;
+    const data = await getAllProducts();
     return data;
   },
 );
@@ -13,7 +13,7 @@ export const fetchProducts = createAsyncThunk(
 const productSlice = createSlice({
   name: "products",
   initialState: {
-    item: [],
+    items: [],
     loading: false,
   },
   reducers: {},
@@ -24,7 +24,7 @@ const productSlice = createSlice({
       })
       .addCase(fetchProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.item = action.payload;
+        state.items = action.payload;
       })
       .addCase(fetchProducts.rejected, (state) => {
         state.loading = false;
