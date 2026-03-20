@@ -17,7 +17,7 @@ export default function AppLayout({
         onNavigate={onNavigate}
         onSearch={onSearch}
       />
-      <main className="py-8">{children}</main>
+      <main>{children}</main>
     </div>
   );
 }

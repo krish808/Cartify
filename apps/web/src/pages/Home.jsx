@@ -1,9 +1,12 @@
-import React from "react";
 import HeroBanner from "../components/HeroBanner";
 import { Section } from "@cartify/ui";
 import CategoryRow from "../components/CategoryRow";
 import DealOfTheDay from "../components/DealOfTheDay";
 import PromoBanners from "../components/PromoBanners";
+import ProductGrid from "../components/ProductGrid";
+import BrandSpotlight from "../components/BrandSpotlight";
+import ShopByPrice from "../components/ShopByPrice";
+import RecentlyViewed from "../components/RecentlyViewed";
 
 export default function Home() {
   return (
@@ -12,10 +15,10 @@ export default function Home() {
       <CategoryRow />
       <DealOfTheDay />
       <PromoBanners />
-      {/* <ProductGrid />
+      <ProductGrid />
       <ShopByPrice />
       <BrandSpotlight />
-      <RecentlyViewed /> */}
+      <RecentlyViewed />
     </Section>
   );
 }

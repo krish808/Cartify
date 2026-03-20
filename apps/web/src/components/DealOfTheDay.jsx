@@ -38,7 +38,7 @@ export default function DealOfTheDay() {
   }, [dispatch, products.length]);
 
   return (
-    <div className="bg-white rounded-sm mb-3">
+    <div className="bg-white rounded-sm">
       <Container>
         {/* Header */}
         <div className="flex items-center justify-between pt-4 pb-1">
