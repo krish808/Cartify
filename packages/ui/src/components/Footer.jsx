@@ -135,7 +135,7 @@ export default function Footer() {
                     href="#"
                     className="text-sm text-gray-400 hover:text-white transition-colors duration-150 flex items-center gap-1.5 group"
                   >
-                    <span className="w-1 h-1 rounded-full bg-[#2874f0] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+                    <span className="w-1 h-1 rounded-full bg-[#2874f0] opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
                     {item}
                   </a>
                 </li>

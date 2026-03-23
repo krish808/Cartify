@@ -58,7 +58,7 @@ export default function Navbar({
         {/* Logo */}
         <button
           onClick={() => handleNavigate("/")}
-          className="flex-shrink-0 flex flex-col items-start cursor-pointer"
+          className="shrink-0 flex flex-col items-start cursor-pointer"
         >
           <span className="text-white text-xl font-bold tracking-wide leading-none">
             Cartify
@@ -88,7 +88,7 @@ export default function Navbar({
             />
             <button
               type="submit"
-              className="bg-[#ffe11b] px-5 flex items-center justify-center hover:bg-yellow-400 transition flex-shrink-0"
+              className="bg-[#ffe11b] px-5 flex items-center justify-center hover:bg-yellow-400 transition shrink-0"
             >
               <MdSearch size={22} className="text-[#2874f0]" />
             </button>
@@ -105,7 +105,7 @@ export default function Navbar({
                 className="flex items-center gap-1.5 text-white px-3 py-2 rounded hover:bg-white/10 transition cursor-pointer"
               >
                 <MdPerson size={20} />
-                <span className="text-sm font-medium max-w-[100px] truncate">
+                <span className="text-sm font-medium max-w-25 truncate">
                   {user.name}
                 </span>
                 <MdKeyboardArrowDown
@@ -116,7 +116,7 @@ export default function Navbar({
 
               {/* Dropdown */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white rounded-sm shadow-xl border border-gray-100 py-1 z-50">
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-sm 5shadow-xl border border-gray-100 py-1 z-50">
                   {/* User info header */}
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900 truncate">

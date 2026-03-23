@@ -111,7 +111,7 @@ export default function RecentlyViewed() {
               <button
                 key={item._id}
                 onClick={() => navigate(`/products/${item._id}`)}
-                className="flex-shrink-0 w-44 bg-white border border-gray-100 rounded-lg p-3 text-left hover:shadow-md hover:border-gray-200 transition-all duration-200 group"
+                className="shrink-0 w-44 bg-white border border-gray-100 rounded-lg p-3 text-left hover:shadow-md hover:border-gray-200 transition-all duration-200 group"
               >
                 {/* Thumbnail */}
                 <div

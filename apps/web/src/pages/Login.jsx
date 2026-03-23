@@ -78,7 +78,7 @@ export default function Login() {
                   key={text}
                   className="flex items-center gap-3 text-sm text-blue-100"
                 >
-                  <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center flex-shrink-0">
+                  <span className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center shrink-0">
                     <Icon size={16} className="text-white" />
                   </span>
                   {text}
@@ -193,7 +193,7 @@ export default function Login() {
             {/* Server error */}
             {error && (
               <div className="bg-red-50 border border-red-200 rounded-md px-4 py-2.5 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
                 <p className="text-sm text-red-600">{error}</p>
               </div>
             )}

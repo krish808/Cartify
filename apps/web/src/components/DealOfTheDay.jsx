@@ -20,7 +20,7 @@ function useCountdown(initialSeconds = 8 * 3600 + 34 * 60 + 21) {
 
 function TimerBox({ value }) {
   return (
-    <span className="bg-gray-900 text-white text-sm font-medium px-2 py-1 rounded-sm min-w-[36px] text-center inline-block">
+    <span className="bg-gray-900 text-white text-sm font-medium px-2 py-1 rounded-sm min-w-9 text-center inline-block">
       {value}
     </span>
   );
