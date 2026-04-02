@@ -44,7 +44,6 @@ export default function Navbar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Close mobile menu on navigation
   const handleNavigate = (path) => {
     setIsOpen(false);
     setDropdownOpen(false);
@@ -97,7 +96,7 @@ export default function Navbar({
 
         {/* Right Side */}
         <div className="hidden md:flex items-center gap-1 ml-auto">
-          {/* Login / User Dropdown */}
+          {/* User Dropdown */}
           {user ? (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -114,10 +113,10 @@ export default function Navbar({
                 />
               </button>
 
-              {/* Dropdown */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-52 bg-white rounded-sm 5shadow-xl border border-gray-100 py-1 z-50">
-                  {/* User info header */}
+                <div className="absolute right-0 mt-2 w-52 bg-white rounded-sm shadow-xl border border-gray-100 py-1 z-50">
+                  {" "}
+                  {/* ✅ fixed 5shadow-xl → shadow-xl */}
                   <div className="px-4 py-3 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900 truncate">
                       {user.name}
@@ -126,7 +125,6 @@ export default function Navbar({
                       {user.email}
                     </p>
                   </div>
-
                   <button
                     onClick={() => handleNavigate("/profile")}
                     className="flex items-center gap-3 w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm text-gray-700 transition"
@@ -134,7 +132,6 @@ export default function Navbar({
                     <MdAccountCircle size={18} className="text-gray-400" />
                     My Profile
                   </button>
-
                   <button
                     onClick={() => handleNavigate("/orders")}
                     className="flex items-center gap-3 w-full text-left px-4 py-2.5 hover:bg-gray-50 text-sm text-gray-700 transition"
@@ -142,9 +139,7 @@ export default function Navbar({
                     <MdListAlt size={18} className="text-gray-400" />
                     My Orders
                   </button>
-
                   <div className="border-t border-gray-100 mt-1" />
-
                   <button
                     onClick={() => {
                       setDropdownOpen(false);
@@ -152,8 +147,7 @@ export default function Navbar({
                     }}
                     className="flex items-center gap-3 w-full text-left px-4 py-2.5 hover:bg-red-50 text-sm text-red-500 transition"
                   >
-                    <MdLogout size={18} />
-                    Logout
+                    <MdLogout size={18} /> Logout
                   </button>
                 </div>
               )}
@@ -163,8 +157,7 @@ export default function Navbar({
               onClick={() => handleNavigate("/login")}
               className="flex items-center gap-1.5 bg-white text-[#2874f0] text-sm font-semibold px-5 py-2 rounded-sm hover:bg-gray-50 transition cursor-pointer"
             >
-              <MdPerson size={18} />
-              Login
+              <MdPerson size={18} /> Login
             </button>
           )}
 
@@ -252,7 +245,6 @@ export default function Navbar({
                 <p className="text-xs text-gray-400">Signed in as</p>
                 <p className="text-sm font-medium text-gray-800">{user.name}</p>
               </div>
-
               <button
                 onClick={() => handleNavigate("/profile")}
                 className="flex items-center gap-3 w-full px-6 py-3 text-gray-700 hover:bg-gray-50 text-sm"
@@ -260,14 +252,12 @@ export default function Navbar({
                 <MdAccountCircle size={18} className="text-gray-400" /> My
                 Profile
               </button>
-
               <button
                 onClick={() => handleNavigate("/orders")}
                 className="flex items-center gap-3 w-full px-6 py-3 text-gray-700 hover:bg-gray-50 text-sm"
               >
                 <MdListAlt size={18} className="text-gray-400" /> My Orders
               </button>
-
               <button
                 onClick={() => {
                   setIsOpen(false);

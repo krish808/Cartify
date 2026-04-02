@@ -12,7 +12,8 @@ import {
 } from "react-icons/md";
 import { fetchProductById, clearSelectedProduct } from "../store/productSlice";
 import { addToCart } from "../store/cartSlice";
-import ProductDetailSkeleton from "../components/ProductDetailSkeleton";
+import { addGuestItem } from "../store/guestCartSlice"; // ✅ added
+import ProductDetailSkeleton from "../components/product/ProductDetailSkeleton";
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -25,15 +26,30 @@ export default function ProductDetails() {
     detailError: error,
   } = useSelector((state) => state.products);
 
-  // ✅ Use Redux instead of direct service call
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated); // ✅ added
+
   useEffect(() => {
     dispatch(fetchProductById(id));
-    return () => dispatch(clearSelectedProduct()); // cleanup on unmount
+    return () => dispatch(clearSelectedProduct());
   }, [id, dispatch]);
 
+  // ✅ fully fixed
   const handleAddToCart = () => {
     if (!product) return;
-    dispatch(addToCart({ ...product, quantity: 1 }));
+
+    if (isAuthenticated) {
+      // logged in → add to server cart
+      dispatch(addToCart({ productId: product._id, quantity: 1 }));
+    } else {
+      // guest → save to localStorage cart
+      dispatch(
+        addGuestItem({
+          productId: product._id,
+          quantity: 1,
+          product, // store full product so guest cart can display it
+        }),
+      );
+    }
   };
 
   const discount = product?.originalPrice
@@ -111,7 +127,6 @@ export default function ProductDetails() {
                 )}
 
                 <div className="border-t border-gray-100 pt-4 mb-4">
-                  {/* ✅ Price in ₹ not $ */}
                   <div className="flex items-baseline gap-2 flex-wrap">
                     <span className="text-3xl font-semibold text-gray-900">
                       ₹{product.price?.toLocaleString()}
@@ -152,7 +167,6 @@ export default function ProductDetails() {
                   )}
                 </p>
 
-                {/* ✅ Add to Cart wired to Redux */}
                 <div className="flex gap-3 flex-wrap">
                   <button
                     onClick={handleAddToCart}
@@ -160,7 +174,7 @@ export default function ProductDetails() {
                     className="flex items-center gap-2 bg-[#ff9f00] hover:bg-[#e8900a] disabled:bg-gray-200 disabled:text-gray-400 text-white font-semibold px-8 py-3 rounded-sm transition"
                   >
                     <MdAddShoppingCart size={20} />
-                    Add to Cart
+                    {isAuthenticated ? "Add to Cart" : "Add to Cart (Guest)"}
                   </button>
                   <button
                     onClick={handleAddToCart}
@@ -170,6 +184,20 @@ export default function ProductDetails() {
                     Buy Now
                   </button>
                 </div>
+
+                {/* ✅ Guest nudge */}
+                {!isAuthenticated && (
+                  <p className="text-xs text-gray-400 mt-3">
+                    💡{" "}
+                    <button
+                      onClick={() => navigate("/login")}
+                      className="text-[#2874f0] underline hover:text-[#1a5dc8]"
+                    >
+                      Login
+                    </button>{" "}
+                    to save your cart across devices.
+                  </p>
+                )}
 
                 {/* Delivery perks */}
                 <div className="mt-6 border-t border-gray-100 pt-5 grid grid-cols-3 gap-3">

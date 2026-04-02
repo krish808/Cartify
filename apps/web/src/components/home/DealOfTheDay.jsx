@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Container } from "@cartify/ui";
 import { MdAccessTime } from "react-icons/md";
-import { fetchProducts } from "../store/productSlice";
+import { fetchProducts } from "../../store/productSlice";
 
 function useCountdown(initialSeconds = 8 * 3600 + 34 * 60 + 21) {
   const [remaining, setRemaining] = useState(initialSeconds);

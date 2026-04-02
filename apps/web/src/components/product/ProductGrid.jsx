@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Container, Button } from "@cartify/ui";
 import { MdStar, MdAddShoppingCart } from "react-icons/md";
-import { fetchProducts } from "../store/productSlice";
-import { addToCart } from "../store/cartSlice";
+import { fetchProducts } from "../../store/productSlice";
+import { addToCart } from "../../store/cartSlice";
 
 function ProductCard({ product }) {
   const navigate = useNavigate();

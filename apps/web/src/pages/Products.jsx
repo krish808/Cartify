@@ -3,9 +3,9 @@ import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Container } from "@cartify/ui"; // ✅ was missing
 import { fetchProducts } from "../store/productSlice";
-import ProductCard from "../components/ProductCard";
+import ProductCard from "../components/product/ProductCard";
 import { MdSearchOff } from "react-icons/md";
-import ProductCardSkeleton from "../components/ProductCardSkeleton";
+import ProductCardSkeleton from "../components/product/ProductCardSkeleton";
 
 export default function Products() {
   const dispatch = useDispatch();

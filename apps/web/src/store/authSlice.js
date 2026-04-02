@@ -1,14 +1,27 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { loginUser, logoutUser } from "../services/authService";
+import { loginUser, logoutUser } from "../services/authService"; // ✅ removed ,m
+import { mergeCart } from "./cartSlice"; // ✅ added missing import
 
 // LOGIN
 export const login = createAsyncThunk(
   "auth/login",
-  async (credentials, { rejectWithValue }) => {
+  async (credentials, { dispatch, rejectWithValue }) => {
     try {
-      return await loginUser(credentials);
+      const data = await loginUser(credentials);
+
+      // ✅ After login, merge guest cart if any
+      const guestItems = JSON.parse(localStorage.getItem("guestCart") || "[]");
+      if (guestItems.length > 0) {
+        const itemsToMerge = guestItems.map(({ productId, quantity }) => ({
+          productId,
+          quantity,
+        }));
+        await dispatch(mergeCart(itemsToMerge));
+      }
+
+      return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data?.message);
+      return rejectWithValue(err.response?.data?.message || "Login failed");
     }
   },
 );
@@ -34,7 +47,6 @@ const authSlice = createSlice({
     error: null,
   },
   reducers: {},
-
   extraReducers: (builder) => {
     builder
       .addCase(login.pending, (state) => {
@@ -52,7 +64,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // ✅ Clear state immediately on click — don't wait for server
+      // ✅ Clear state immediately on click
       .addCase(logout.pending, (state) => {
         state.user = null;
         state.isAuthenticated = false;
@@ -70,3 +82,13 @@ const authSlice = createSlice({
 });
 
 export default authSlice.reducer;
+
+// That's the full guest cart flow now complete! Here's a summary of everything wired up:
+// ```
+// Guest adds item   → guestCartSlice → localStorage ✅
+// Guest views cart  → CartPage shows guest cart ✅
+// Guest clicks login → navigates to /login ✅
+// Login succeeds    → mergeCart dispatched ✅
+// mergeCart         → POST /api/cart/merge ✅
+// After merge       → clearGuestCart (localStorage cleared) ✅
+// Navbar badge      → updates from server cart ✅
