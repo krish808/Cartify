@@ -1,6 +1,7 @@
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { createSelector } from "@reduxjs/toolkit";
 import { Container } from "@cartify/ui";
 import {
   MdChevronLeft,
@@ -49,13 +50,23 @@ const getCategoryStyle = (product) => {
   return { icon: MdShoppingBag, bg: "#f5f5f5", color: "#424242" };
 };
 
+const selectRecentlyViewed = createSelector(
+  (state) => state.recentlyViewed?.items,
+  (items) => items || [],
+);
+
+const selectAllProducts = (state) => state.products.items;
+
 export default function RecentlyViewed() {
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
-  const recentItems = useSelector((state) => state.recentlyViewed?.items || []);
-  const allProducts = useSelector((state) => state.products.items);
-  const items = recentItems.length > 0 ? recentItems : allProducts.slice(0, 10);
+  const recentItems = useSelector(selectRecentlyViewed);
+  const allProducts = useSelector(selectAllProducts);
+
+  const items = useMemo(() => {
+    return recentItems.length > 0 ? recentItems : allProducts.slice(0, 10);
+  }, [recentItems, allProducts]);
 
   const scroll = (dir) =>
     scrollRef.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
