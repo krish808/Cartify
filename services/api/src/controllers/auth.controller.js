@@ -103,10 +103,16 @@ export const refreshToken = async (req, res) => {
 export const logout = async (req, res) => {
   const user = await User.findById(req.user._id);
 
-  user.refreshToken = null;
-  await user.save();
+  if (user) {
+    user.refreshToken = null;
+    await user.save();
+  }
 
-  res.clearCookie("refreshToken");
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // ✅ true in prod
+    sameSite: process.env.NODE_ENV === "production" ? "None" : "strict",
+  });
 
   res.json({ message: "Logged out successfully" });
 };
