@@ -1,5 +1,5 @@
-// src/store/guestCartSlice.js
 import { createSlice } from "@reduxjs/toolkit";
+import toast from "react-hot-toast"; // ✅ added
 
 const loadFromStorage = () => {
   try {
@@ -25,8 +25,10 @@ const guestCartSlice = createSlice({
       const existing = state.items.find((i) => i.productId === productId);
       if (existing) {
         existing.quantity += quantity;
+        toast.success("Cart updated!"); // ✅
       } else {
         state.items.push({ productId, quantity, product });
+        toast.success("Added to cart!"); // ✅
       }
       saveToStorage(state.items);
     },
@@ -36,16 +38,19 @@ const guestCartSlice = createSlice({
       const item = state.items.find((i) => i.productId === productId);
       if (item) item.quantity = quantity;
       saveToStorage(state.items);
+      // ❌ no toast here — too frequent (every +/- click)
     },
 
     removeGuestItem(state, action) {
       state.items = state.items.filter((i) => i.productId !== action.payload);
       saveToStorage(state.items);
+      toast.success("Item removed"); // ✅
     },
 
     clearGuestCart(state) {
       state.items = [];
       localStorage.removeItem("guestCart");
+      // ❌ no toast here — called silently after merge/logout
     },
   },
 });

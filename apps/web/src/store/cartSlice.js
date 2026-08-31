@@ -8,7 +8,7 @@ import {
   mergeCartItems,
 } from "../services/cartServices.js";
 
-import clearGuestCart from "./guestCartSlice";
+import { clearGuestCart } from "./guestCartSlice";
 
 // GET CART
 export const fetchCart = createAsyncThunk(
@@ -68,8 +68,8 @@ export const removeFromCart = createAsyncThunk(
 );
 
 // CLEAR CART
-export const clearCart = createAsyncThunk(
-  "cart/clearCart",
+export const clearCartState = createAsyncThunk(
+  "cart/clearCartState",
   async (_, { rejectWithValue }) => {
     try {
       await clearCartItems();
@@ -105,7 +105,15 @@ const cartSlice = createSlice({
     actionLoading: false, // ✅ separate — only for add/remove/update
     error: null,
   },
-  reducers: {},
+  reducers: {
+    clearCartState: (state) => {
+      state.items = [];
+      state.totalAmount = 0;
+      state.loading = false;
+      state.actionLoading = false;
+      state.error = null;
+    },
+  },
   extraReducers: (builder) => {
     builder
       // FETCH CART
@@ -179,7 +187,7 @@ const cartSlice = createSlice({
         state.error = action.payload;
       })
       // CLEAR CART
-      .addCase(clearCart.fulfilled, (state) => {
+      .addCase(clearCartState.fulfilled, (state) => {
         state.items = [];
         state.totalAmount = 0;
       });

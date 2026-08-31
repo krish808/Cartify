@@ -9,7 +9,9 @@ import Products from "./pages/Products";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "./store/authSlice";
 import { fetchCart } from "./store/cartSlice";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+import Register from "./pages/Register";
+import { Toaster } from "react-hot-toast";
 
 export default function App() {
   const dispatch = useDispatch();
@@ -18,13 +20,19 @@ export default function App() {
   const user = useSelector((state) => state.auth.user);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
 
-  // ✅ Show server cart count when logged in, guest cart count when not
-  const authItemCount = useSelector((state) =>
-    state.cart.items.reduce((acc, item) => acc + item.quantity, 0),
+  const cartItems = useSelector((state) => state.cart.items);
+  const guestItems = useSelector((state) => state.guestCart.items);
+
+  const authItemCount = useMemo(
+    () => cartItems.reduce((acc, item) => acc + item.quantity, 0),
+    [cartItems],
   );
-  const guestItemCount = useSelector((state) =>
-    state.guestCart.items.reduce((acc, item) => acc + item.quantity, 0),
+
+  const guestItemCount = useMemo(
+    () => guestItems.reduce((acc, item) => acc + item.quantity, 0),
+    [guestItems],
   );
+
   const totalItems = isAuthenticated ? authItemCount : guestItemCount;
 
   // ✅ Fetch server cart on app load when logged in
@@ -45,6 +53,39 @@ export default function App() {
 
   return (
     <>
+      {/* Toaster - must be inside return , outside Routes */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            borderRadius: "8px",
+            fontSize: "14px",
+          },
+          success: {
+            style: {
+              background: "#f0fdf4",
+              color: "#166534",
+              border: "1px solid #bbf7d0",
+            },
+            iconTheme: {
+              primary: "#16a34a",
+              secondary: "#f0fdf4",
+            },
+          },
+          error: {
+            style: {
+              background: "#fef2f2",
+              color: "#991b1b",
+              border: "1px solid #fecaca",
+            },
+            iconTheme: {
+              primary: "#dc2626",
+              secondary: "#fef2f2",
+            },
+          },
+        }}
+      />
       <AppLayout
         user={user}
         totalItems={totalItems}
@@ -55,6 +96,10 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/products/:id" element={<ProductDetails />} />
+        <Route path="/cart" element={<CartPage />} />
         <Route
           path="/dashboard"
           element={
@@ -63,9 +108,6 @@ export default function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/products" element={<Products />} />
-        <Route path="/products/:id" element={<ProductDetails />} />
-        <Route path="/cart" element={<CartPage />} />
       </Routes>
       <Footer />
     </>

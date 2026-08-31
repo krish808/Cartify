@@ -4,7 +4,7 @@ import { Container } from "@cartify/ui";
 import { MdDelete } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
 import {
-  clearCart,
+  clearCartState,
   fetchCart,
   removeFromCart,
   updateQuantity,
@@ -162,7 +162,7 @@ export default function CartPage() {
               ))}
               <div className="flex justify-end">
                 <button
-                  onClick={() => dispatch(clearCart())}
+                  onClick={() => dispatch(clearCartState())}
                   className="text-xs text-red-400 hover:text-red-600 transition flex items-center gap-1"
                 >
                   <MdDelete size={14} /> Clear Cart

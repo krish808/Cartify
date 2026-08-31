@@ -1,6 +1,27 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { loginUser, logoutUser } from "../services/authService"; // ✅ removed ,m
-import { mergeCart } from "./cartSlice"; // ✅ added missing import
+import { registerUser, loginUser, logoutUser } from "../services/authService";
+import { mergeCart, clearCartState } from "./cartSlice"; // ✅ clearCartState not clearCart
+import { clearGuestCart } from "./guestCartSlice"; // ✅ added
+import toast from "react-hot-toast";
+
+// REGISTER
+export const register = createAsyncThunk(
+  "auth/register",
+  async (credentials, { rejectWithValue }) => {
+    try {
+      const data = await registerUser(credentials);
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      toast.success("Account created successfully! 🎉");
+      return data;
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Registration failed");
+      return rejectWithValue(
+        err.response?.data?.message || "Registration failed",
+      );
+    }
+  },
+);
 
 // LOGIN
 export const login = createAsyncThunk(
@@ -9,34 +30,56 @@ export const login = createAsyncThunk(
     try {
       const data = await loginUser(credentials);
 
-      // ✅ After login, merge guest cart if any
+      // ✅ Save token first before any authenticated API calls
+      localStorage.setItem("accessToken", data.accessToken);
+      localStorage.setItem("user", JSON.stringify(data.user));
+
+      // ✅ Merge guest cart if any
       const guestItems = JSON.parse(localStorage.getItem("guestCart") || "[]");
       if (guestItems.length > 0) {
         const itemsToMerge = guestItems.map(({ productId, quantity }) => ({
           productId,
           quantity,
         }));
-        await dispatch(mergeCart(itemsToMerge));
+        try {
+          await dispatch(mergeCart(itemsToMerge));
+        } catch (error) {
+          console.error("Merge failed", error);
+        } finally {
+          // ✅ Always clear guest cart after login
+          dispatch(clearGuestCart());
+          localStorage.removeItem("guestCart");
+        }
       }
 
+      toast.success(`Welcome back, ${data.user.name}! 👋`);
       return data;
     } catch (err) {
+      toast.error(err.response?.data?.message || "Login failed");
       return rejectWithValue(err.response?.data?.message || "Login failed");
     }
   },
 );
 
 // LOGOUT
-export const logout = createAsyncThunk("auth/logout", async () => {
-  try {
-    await logoutUser();
-  } catch (err) {
-    console.error("Logout error:", err);
-  } finally {
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("user");
-  }
-});
+export const logout = createAsyncThunk(
+  "auth/logout",
+  async (_, { dispatch }) => {
+    try {
+      await logoutUser();
+      toast.success("Logged out successfully!");
+    } catch (err) {
+      console.error("Logout error:", err);
+    } finally {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      localStorage.removeItem("guestCart");
+      dispatch(clearCartState()); // ✅ clears Redux cart state (no API call)
+      dispatch(clearGuestCart()); // ✅ clears Redux guest cart state
+    }
+  },
+);
 
 const authSlice = createSlice({
   name: "auth",
@@ -49,6 +92,19 @@ const authSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
+      .addCase(register.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(register.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+      })
+      .addCase(register.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -64,7 +120,6 @@ const authSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      // ✅ Clear state immediately on click
       .addCase(logout.pending, (state) => {
         state.user = null;
         state.isAuthenticated = false;
@@ -73,7 +128,6 @@ const authSlice = createSlice({
         state.user = null;
         state.isAuthenticated = false;
       })
-      // ✅ Clear state even if server call fails
       .addCase(logout.rejected, (state) => {
         state.user = null;
         state.isAuthenticated = false;
@@ -82,13 +136,3 @@ const authSlice = createSlice({
 });
 
 export default authSlice.reducer;
-
-// That's the full guest cart flow now complete! Here's a summary of everything wired up:
-// ```
-// Guest adds item   → guestCartSlice → localStorage ✅
-// Guest views cart  → CartPage shows guest cart ✅
-// Guest clicks login → navigates to /login ✅
-// Login succeeds    → mergeCart dispatched ✅
-// mergeCart         → POST /api/cart/merge ✅
-// After merge       → clearGuestCart (localStorage cleared) ✅
-// Navbar badge      → updates from server cart ✅
