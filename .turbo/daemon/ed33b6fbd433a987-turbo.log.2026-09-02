@@ -1,0 +1,9 @@
+2026-09-02T08:33:50.052442Z  WARN turborepo_filewatch: failed to remove cookie file failed to remove file `D:\MERN projects\Cartify\.turbo\cookies\.turbo-cookie`
+2026-09-02T08:33:50.229148Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
+2026-09-02T08:33:50.285521Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
+2026-09-02T12:47:50.700282Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
+2026-09-02T12:47:50.763929Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
+2026-09-02T12:53:57.128670Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
+2026-09-02T12:53:57.447844Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
+2026-09-02T13:00:31.679424Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
+2026-09-02T13:00:32.128453Z  WARN daemon_server: turborepo_lib::commands::daemon: daemon already running
