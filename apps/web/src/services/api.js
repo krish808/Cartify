@@ -54,7 +54,10 @@ api.interceptors.response.use(
           { withCredentials: true },
         );
 
-        const newToken = res.data.accessToken;
+        const newToken = res.data?.accessToken;
+        if (!newToken) {
+          throw new Error("Refresh response missing accessToken");
+        }
         localStorage.setItem("accessToken", newToken);
 
         failedQueue.forEach((prom) => prom.resolve(newToken));
