@@ -99,7 +99,7 @@ export const refreshToken = async (req, res) => {
     throw new AppError("Invalid or expired refresh token", 403);
   }
 
-  const user = await User.findById(decoded.id);
+  const user = await User.findById(decoded._id);
 
   if (!user || user.refreshToken !== token) {
     // ✅ token doesn't match what's on record — already rotated/logged out
