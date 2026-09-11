@@ -88,8 +88,18 @@ const authSlice = createSlice({
     isAuthenticated: !!localStorage.getItem("accessToken"),
     loading: false,
     error: null,
+    sessionExpired: false, // ✅ added to track session expiry
   },
-  reducers: {},
+  reducers: {
+    sessionExpired: (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+      state.sessionExpired = true;
+    },
+    clearSessionExpired: (state) => {
+      state.sessionExpired = false;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(register.pending, (state) => {
@@ -113,6 +123,7 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.user;
         state.isAuthenticated = true;
+        state.sessionExpired = false;
         localStorage.setItem("accessToken", action.payload.accessToken);
         localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
@@ -135,4 +146,5 @@ const authSlice = createSlice({
   },
 });
 
+export const { sessionExpired, clearSessionExpired } = authSlice.actions;
 export default authSlice.reducer;
