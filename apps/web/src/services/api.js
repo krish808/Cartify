@@ -1,4 +1,6 @@
 import axios from "axios";
+import { store } from "../store/store"; // Import the Redux store
+import { sessionExpired } from "../store/authSlice";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -38,6 +40,7 @@ api.interceptors.response.use(
           failedQueue.push({ resolve, reject });
         })
           .then((token) => {
+            originalRequest._retry = true;
             originalRequest.headers.Authorization = `Bearer ${token}`;
             return api(originalRequest);
           })
@@ -72,6 +75,7 @@ api.interceptors.response.use(
 
         localStorage.removeItem("accessToken");
         localStorage.removeItem("user");
+        store.dispatch(sessionExpired());
 
         return Promise.reject(err);
       } finally {

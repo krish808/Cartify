@@ -7,11 +7,11 @@ import CartPage from "./pages/CartPage";
 import { AppLayout, Footer } from "@cartify/ui";
 import Products from "./pages/Products";
 import { useDispatch, useSelector } from "react-redux";
-import { logout } from "./store/authSlice";
+import { logout, clearSessionExpired } from "./store/authSlice";
 import { fetchCart } from "./store/cartSlice";
 import { useEffect, useMemo } from "react";
 import Register from "./pages/Register";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 
 export default function App() {
   const dispatch = useDispatch();
@@ -19,6 +19,7 @@ export default function App() {
 
   const user = useSelector((state) => state.auth.user);
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const sessionExpiredFlag = useSelector((state) => state.auth.sessionExpired);
 
   const cartItems = useSelector((state) => state.cart.items);
   const guestItems = useSelector((state) => state.guestCart.items);
@@ -41,6 +42,18 @@ export default function App() {
       dispatch(fetchCart());
     }
   }, [isAuthenticated, dispatch]);
+
+  // ✅ Handle forced session expiry (set by the axios interceptor when a
+  // refresh attempt fails). Distinct from manual logout — only fires when
+  // the `sessionExpired` flag is explicitly set, not on every auth
+  // transition, so guests browsing without ever logging in are unaffected.
+  useEffect(() => {
+    if (sessionExpiredFlag) {
+      toast.error("Session expired. Please log in again.");
+      navigate("/login");
+      dispatch(clearSessionExpired());
+    }
+  }, [sessionExpiredFlag, navigate, dispatch]);
 
   const handleSearch = (query) => {
     navigate(`/products?search=${query}`);
