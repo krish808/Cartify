@@ -90,3 +90,148 @@ describe("POST /api/auth/refresh", () => {
     expect(res.status).toBe(403);
   });
 });
+
+describe("POST /api/auth/register", () => {
+  const newUser = {
+    name: "New User",
+    email: "newuser@example.com",
+    password: "password123",
+  };
+
+  it("creates a user and returns an access token + refresh cookie", async () => {
+    const res = await request(app).post("/api/auth/register").send(newUser);
+
+    expect(res.status).toBe(201);
+    expect(res.body.accessToken).toBeDefined();
+    expect(res.body.user.email).toBe(newUser.email);
+    expect(res.body.user.password).toBeUndefined(); // ✅ never leak the hash
+
+    const setCookie = res.headers["set-cookie"];
+    expect(setCookie.some((c) => c.startsWith("refreshToken="))).toBe(true);
+  });
+
+  it("hashes the password rather than storing it in plaintext", async () => {
+    await request(app).post("/api/auth/register").send(newUser);
+
+    const stored = await User.findOne({ email: newUser.email });
+    expect(stored.password).not.toBe(newUser.password);
+  });
+
+  it("rejects registering the same email twice", async () => {
+    await request(app).post("/api/auth/register").send(newUser);
+
+    const res = await request(app).post("/api/auth/register").send(newUser);
+
+    expect(res.status).toBe(400);
+    expect(res.body.message).toMatch(/already exists/i);
+  });
+
+  it("defaults to 'customer' role for an invalid/unrecognized role", async () => {
+    const res = await request(app)
+      .post("/api/auth/register")
+      .send({ ...newUser, role: "superadmin" });
+
+    expect(res.status).toBe(201);
+    expect(res.body.user.role).toBe("customer");
+  });
+});
+
+describe("POST /api/auth/login", () => {
+  const existingUser = {
+    name: "Existing User",
+    email: "existing@example.com",
+    password: "correctpassword",
+  };
+
+  beforeEach(async () => {
+    await request(app).post("/api/auth/register").send(existingUser);
+  });
+
+  it("logs in with correct credentials", async () => {
+    const res = await request(app).post("/api/auth/login").send({
+      email: existingUser.email,
+      password: existingUser.password,
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.accessToken).toBeDefined();
+    expect(res.body.user.email).toBe(existingUser.email);
+  });
+
+  it("rejects an incorrect password", async () => {
+    const res = await request(app).post("/api/auth/login").send({
+      email: existingUser.email,
+      password: "wrongpassword",
+    });
+
+    expect(res.status).toBe(401);
+  });
+
+  it("rejects a nonexistent email", async () => {
+    const res = await request(app).post("/api/auth/login").send({
+      email: "doesnotexist@example.com",
+      password: "whatever",
+    });
+
+    expect(res.status).toBe(401);
+  });
+
+  it("gives the same error message for wrong password and unknown email", async () => {
+    // ✅ security check: login errors shouldn't reveal whether an email
+    // exists in the system (prevents user enumeration)
+    const wrongPassRes = await request(app).post("/api/auth/login").send({
+      email: existingUser.email,
+      password: "wrongpassword",
+    });
+
+    const noUserRes = await request(app).post("/api/auth/login").send({
+      email: "doesnotexist@example.com",
+      password: "whatever",
+    });
+
+    expect(wrongPassRes.body.message).toBe(noUserRes.body.message);
+  });
+});
+
+describe("POST /api/auth/logout", () => {
+  const registerAndLogin = async () => {
+    const user = {
+      name: "Logout Test User",
+      email: "logouttest@example.com",
+      password: "password123",
+    };
+    await request(app).post("/api/auth/register").send(user);
+
+    const res = await request(app)
+      .post("/api/auth/login")
+      .send({ email: user.email, password: user.password });
+
+    return {
+      accessToken: res.body.accessToken,
+      userId: res.body.user._id,
+    };
+  };
+
+  it("clears the refresh token cookie and the DB record when logged in", async () => {
+    const { accessToken, userId } = await registerAndLogin();
+
+    const res = await request(app)
+      .post("/api/auth/logout")
+      .set("Authorization", `Bearer ${accessToken}`);
+
+    expect(res.status).toBe(200);
+
+    const clearedCookie = res.headers["set-cookie"]?.find((c) =>
+      c.startsWith("refreshToken="),
+    );
+    expect(clearedCookie).toMatch(/Expires=Thu, 01 Jan 1970/);
+
+    const user = await User.findById(userId);
+    expect(user.refreshToken).toBeNull();
+  });
+
+  it("rejects logout without a valid access token", async () => {
+    const res = await request(app).post("/api/auth/logout");
+    expect(res.status).toBe(401);
+  });
+});
