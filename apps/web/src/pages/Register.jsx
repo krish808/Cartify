@@ -164,6 +164,7 @@ export default function Register() {
                   type="text"
                   name="name"
                   placeholder="Enter your full name"
+                  value={form.name}
                   onChange={handleChange}
                   onBlur={() => handleBlur("name")}
                   className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-md focus:outline-none focus:ring-2 transition ${errors.name ? "border-red-400 focus:ring-red-400" : "border-red-gray focus:ring-[#2874f0]/30 focus:border-[#2874f0]"}`}
@@ -243,7 +244,7 @@ export default function Register() {
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
                 />
                 <input
-                  type={showPass ? "text" : "Password"}
+                  type={showConfirm ? "text" : "password"}
                   name="confirmPassword"
                   placeholder="confirm your password"
                   value={form.confirmPassword}
