@@ -4,14 +4,35 @@ import { mergeCart, clearCartState } from "./cartSlice"; // ✅ clearCartState n
 import { clearGuestCart } from "./guestCartSlice"; // ✅ added
 import toast from "react-hot-toast";
 
+ const mergeGuestCartIfAny = async(dispatch)=>{
+  const guestItems = JSON.parse(localStorage.getItem("guestCart") ||"[]")
+  if(guestItems.length === 0)return
+
+  const itemsToMerge = guestItems.map(({productId,quantity})=>({
+    productId,quantity
+  }))
+
+  const result = await dispatch(mergeCart(itemsToMerge))
+  
+  if(mergeCart.rejected.match(result)){
+    console.error("Guest cart merge failed :",result.payload)
+    toast.error("We couldn't restore your cart items Please check your cart.")
+    dispatch(clearGuestCart())
+    localStorage.removeItem("guestCart")
+  }
+ }
+
 // REGISTER
 export const register = createAsyncThunk(
   "auth/register",
-  async (credentials, { rejectWithValue }) => {
+  async (credentials, {dispatch, rejectWithValue }) => {
     try {
       const data = await registerUser(credentials);
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("user", JSON.stringify(data.user));
+
+      await mergeGuestCartIfAny(dispatch)
+
       toast.success("Account created successfully! 🎉");
       return data;
     } catch (err) {
@@ -34,23 +55,7 @@ export const login = createAsyncThunk(
       localStorage.setItem("accessToken", data.accessToken);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // ✅ Merge guest cart if any
-      const guestItems = JSON.parse(localStorage.getItem("guestCart") || "[]");
-      if (guestItems.length > 0) {
-        const itemsToMerge = guestItems.map(({ productId, quantity }) => ({
-          productId,
-          quantity,
-        }));
-        try {
-          await dispatch(mergeCart(itemsToMerge));
-        } catch (error) {
-          console.error("Merge failed", error);
-        } finally {
-          // ✅ Always clear guest cart after login
-          dispatch(clearGuestCart());
-          localStorage.removeItem("guestCart");
-        }
-      }
+      await mergeGuestCartIfAny(dispatch)
 
       toast.success(`Welcome back, ${data.user.name}! 👋`);
       return data;
@@ -72,11 +77,10 @@ export const logout = createAsyncThunk(
       console.error("Logout error:", err);
     } finally {
       localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
       localStorage.removeItem("user");
       localStorage.removeItem("guestCart");
-      dispatch(clearCartState()); // ✅ clears Redux cart state (no API call)
-      dispatch(clearGuestCart()); // ✅ clears Redux guest cart state
+      dispatch(clearCartState());
+      dispatch(clearGuestCart()); 
     }
   },
 );
