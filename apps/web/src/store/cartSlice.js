@@ -57,8 +57,8 @@ export const removeFromCart = createAsyncThunk(
   "cart/removeFromCart",
   async (productId, { rejectWithValue }) => {
     try {
-      await removeCartItem(productId);
-      return productId;
+     const data= await removeCartItem(productId);
+      return data;
     } catch (err) {
       return rejectWithValue(
         err.response?.data?.message || "Failed to remove item",
@@ -105,15 +105,6 @@ const cartSlice = createSlice({
     actionLoading: false, // ✅ separate — only for add/remove/update
     error: null,
   },
-  reducers: {
-    clearCartState: (state) => {
-      state.items = [];
-      state.totalAmount = 0;
-      state.loading = false;
-      state.actionLoading = false;
-      state.error = null;
-    },
-  },
   extraReducers: (builder) => {
     builder
       // FETCH CART
@@ -159,20 +150,15 @@ const cartSlice = createSlice({
         state.actionLoading = false;
         state.error = action.payload;
       })
-
+ 
       // REMOVE FROM CART
       .addCase(removeFromCart.pending, (state) => {
         state.actionLoading = true;
       })
       .addCase(removeFromCart.fulfilled, (state, action) => {
         state.actionLoading = false;
-        state.items = state.items.filter(
-          (item) => item.product._id !== action.payload,
-        );
-        state.totalAmount = state.items.reduce(
-          (sum, item) => sum + item.product.price * item.quantity,
-          0,
-        );
+        state.items = action.payload.items || []
+        state.totalAmount = action.payload.totalAmount || 0
       })
       .addCase(removeFromCart.rejected, (state, action) => {
         state.actionLoading = false;
