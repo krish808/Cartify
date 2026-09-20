@@ -1,11 +1,12 @@
 import Payment from "../models/Payment.js";
 import Order from "../models/Order.js";
 import AppError from "../utils/AppError.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 /* =========================
    CREATE PAYMENT (COD)
 ========================= */
-export const createPayment = async (req, res) => {
+export const createPayment = asyncHandler(async (req, res) => {
   const { orderId, method = "COD" } = req.body;
 
   const order = await Order.findById(orderId);
@@ -25,16 +26,26 @@ export const createPayment = async (req, res) => {
   await order.save();
 
   res.status(201).json(payment);
-};
+});
 
 /* =========================
    MARK PAYMENT PAID
 ========================= */
-export const markPaymentPaid = async (req, res) => {
+export const markPaymentPaid = asyncHandler(async (req, res) => {
   const { paymentId } = req.params;
 
   const payment = await Payment.findById(paymentId);
   if (!payment) throw new AppError("Payment not found", 404);
+
+  // ✅ ownership check — without this, any logged-in user who knows or
+  // guesses a paymentId could mark someone else's payment (and order) as
+  // paid without ever actually paying.
+  if (String(payment.user) !== String(req.user._id))
+    throw new AppError("Unauthorized", 403);
+
+  if (payment.status === "PAID") {
+    throw new AppError("Payment already completed", 400);
+  }
 
   payment.status = "PAID";
   payment.transactionId = `COD-${Date.now()}`;
@@ -46,24 +57,29 @@ export const markPaymentPaid = async (req, res) => {
   });
 
   res.json({ message: "Payment successful" });
-};
+});
 
-export const confirmPayment = async (req, res) => {
+/* =========================
+   CONFIRM PAYMENT
+========================= */
+export const confirmPayment = asyncHandler(async (req, res) => {
   const { paymentId, transactionId } = req.body;
 
   const payment = await Payment.findById(paymentId);
   if (!payment) throw new AppError("Payment not found", 404);
 
+  // ✅ same ownership check as above
+  if (String(payment.user) !== String(req.user._id))
+    throw new AppError("Unauthorized", 403);
+
   if (payment.status === "PAID") {
     throw new AppError("Payment already completed", 400);
   }
 
-  // 🔄 Update Payment
   payment.status = "PAID";
   payment.transactionId = transactionId;
   await payment.save();
 
-  // 🔄 Update Order
   const order = await Order.findById(payment.order);
   if (!order) throw new AppError("Order not found", 404);
 
@@ -76,4 +92,4 @@ export const confirmPayment = async (req, res) => {
     payment,
     order,
   });
-};
+});
