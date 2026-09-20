@@ -1,98 +1,115 @@
-import mongoose from "mongoose";
 import Cart from "../models/Cart.js";
 import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import Payment from "../models/Payment.js";
 import AppError from "../utils/AppError.js";
 import Coupon from "../models/Coupon.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
-export const checkout = async (req, res) => {
+export const checkout = asyncHandler(async (req, res) => {
   const userId = req.user._id;
   const { couponCode } = req.body;
 
-  const cart = await Cart.findOne({ user: userId });
+  const cart = await Cart.findOne({ user: userId }).populate("items.product");
   if (!cart || cart.items.length === 0) {
     throw new AppError("Cart is empty", 400);
   }
 
-  let totalAmount = 0;
-  const orderItems = [];
+  // ✅ Group items by seller — a cart can contain products from multiple
+  // sellers, but each Order belongs to exactly one seller, so we split
+  // checkout into one order per seller (same pattern real marketplaces use).
+  const itemsBySeller = new Map();
 
-  // Validate stock and calculate total
   for (const item of cart.items) {
-    const product = await Product.findById(item.product);
-
-    if (!product) throw new AppError("Product not found", 404);
+    const product = item.product;
+    if (!product) throw new AppError("A product in your cart no longer exists", 404);
 
     if (product.stock < item.quantity) {
       throw new AppError(`Insufficient stock for ${product.name}`, 400);
     }
 
-    totalAmount += product.price * item.quantity;
-
-    orderItems.push({
-      product: product._id,
-      quantity: item.quantity,
-      priceAtPurchase: product.price,
-    });
+    const sellerId = String(product.seller);
+    if (!itemsBySeller.has(sellerId)) {
+      itemsBySeller.set(sellerId, []);
+    }
+    itemsBySeller.get(sellerId).push({ product, quantity: item.quantity });
   }
 
-  let discount = 0;
+  // ✅ Coupons only supported for single-seller carts for now — splitting
+  // a discount fairly across multiple sellers' orders is a real design
+  // question (who "absorbs" the discount?) we're deferring intentionally.
+  if (couponCode && itemsBySeller.size > 1) {
+    throw new AppError(
+      "Coupons can only be applied to orders from a single seller",
+      400,
+    );
+  }
 
-  // 🎟 Apply Coupon if provided
+  let coupon = null;
   if (couponCode) {
-    const coupon = await Coupon.findOne({
+    coupon = await Coupon.findOne({
       code: couponCode.toUpperCase(),
       isActive: true,
     });
 
     if (!coupon) throw new AppError("Invalid coupon code", 400);
-
-    if (coupon.expiresAt < new Date())
-      throw new AppError("Coupon expired", 400);
-
-    if (totalAmount < coupon.minOrderAmount)
-      throw new AppError(
-        `Minimum order amount is ₹${coupon.minOrderAmount}`,
-        400,
-      );
-
-    if (coupon.discountType === "PERCENT") {
-      discount = (totalAmount * coupon.discountValue) / 100;
-    } else {
-      discount = coupon.discountValue;
-    }
-
-    if (discount > totalAmount) {
-      discount = totalAmount;
-    }
-
-    totalAmount -= discount;
+    if (coupon.expiresAt < new Date()) throw new AppError("Coupon expired", 400);
   }
 
-  // 📦 Create Order
-  const order = await Order.create({
-    user: userId,
-    seller: cart.seller,
-    items: orderItems,
-    totalAmount,
-    discount,
-  });
+  const createdOrders = [];
 
-  // 💳 Create Payment
-  const payment = await Payment.create({
-    order: order._id,
-    user: userId,
-    amount: totalAmount,
-    status: "PENDING",
-  });
+  for (const [sellerId, items] of itemsBySeller) {
+    let sellerTotal = items.reduce(
+      (sum, i) => sum + i.product.price * i.quantity,
+      0,
+    );
 
-  order.payment = payment._id;
-  await order.save();
+    let discount = 0;
 
-  // 📉 Reduce stock
+    if (coupon) {
+      if (sellerTotal < coupon.minOrderAmount) {
+        throw new AppError(`Minimum order amount is ₹${coupon.minOrderAmount}`, 400);
+      }
+
+      discount =
+        coupon.discountType === "PERCENT"
+          ? (sellerTotal * coupon.discountValue) / 100
+          : coupon.discountValue;
+
+      if (discount > sellerTotal) discount = sellerTotal;
+      sellerTotal -= discount;
+    }
+
+    const orderItems = items.map(({ product, quantity }) => ({
+      product: product._id,
+      quantity,
+      priceAtPurchase: product.price,
+    }));
+
+    const order = await Order.create({
+      user: userId,
+      seller: sellerId,
+      items: orderItems,
+      totalAmount: sellerTotal,
+      discount,
+    });
+
+    const payment = await Payment.create({
+      order: order._id,
+      user: userId,
+      amount: sellerTotal,
+      status: "PENDING",
+    });
+
+    order.payment = payment._id;
+    await order.save();
+
+    createdOrders.push({ order, payment });
+  }
+
+  // 📉 Reduce stock — done once, after all orders are successfully created
   for (const item of cart.items) {
-    await Product.findByIdAndUpdate(item.product, {
+    await Product.findByIdAndUpdate(item.product._id, {
       $inc: { stock: -item.quantity },
     });
   }
@@ -102,8 +119,7 @@ export const checkout = async (req, res) => {
 
   res.status(201).json({
     message: "Checkout successful",
-    order,
-    discountApplied: discount,
-    payment,
+    orders: createdOrders.map((o) => o.order),
+    payments: createdOrders.map((o) => o.payment),
   });
-};
+});
