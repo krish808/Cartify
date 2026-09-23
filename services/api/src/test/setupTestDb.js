@@ -1,17 +1,17 @@
-import { MongoMemoryServer } from "mongodb-memory-server";
+import { MongoMemoryReplSet } from "mongodb-memory-server";
 import mongoose from "mongoose";
 
-let mongoServer;
+let replSet;
 
 export const connectTestDb = async () => {
-  mongoServer = await MongoMemoryServer.create();
-  const uri = mongoServer.getUri();
+  replSet = await MongoMemoryReplSet.create();
+  const uri = replSet.getUri();
   await mongoose.connect(uri);
 };
 
 export const disconnectTestDb = async () => {
   await mongoose.disconnect();
-  if (mongoServer) await mongoServer.stop();
+  if (replSet) await replSet.stop();
 };
 
 export const clearTestDb = async () => {
