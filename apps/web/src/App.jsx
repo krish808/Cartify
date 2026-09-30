@@ -12,6 +12,7 @@ import { fetchCart } from "./store/cartSlice";
 import { useEffect, useMemo } from "react";
 import Register from "./pages/Register";
 import { Toaster, toast } from "react-hot-toast";
+import Checkout from "./pages/Checkout";
 
 export default function App() {
   const dispatch = useDispatch();
@@ -113,6 +114,14 @@ export default function App() {
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetails />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard"
           element={
