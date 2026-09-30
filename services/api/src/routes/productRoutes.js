@@ -24,6 +24,7 @@ const router = express.Router();
 // });
 
 router.get("/all", getAllProducts);
+router.get("/my", protect, authorize("seller"), getMyProducts);
 router.get("/:id", getProductById);
 
 router.post(
@@ -34,7 +35,6 @@ router.post(
   createProduct,
 );
 
-router.get("/my", protect, authorize("seller"), getMyProducts);
 
 router.delete("/:id", protect, authorize("seller"), deleteProduct);
 
