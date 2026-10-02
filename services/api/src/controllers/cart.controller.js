@@ -54,7 +54,7 @@ export const addToCart = asyncHandler(async (req, res) => {
 
   await recalculateTotal(cart);
   await cart.save();
-  await cart.populate("items.product", "name price image originalPrice");
+  await cart.populate("items.product", "name price images stock");
 
   res.status(200).json(cart);
 });
@@ -63,7 +63,7 @@ export const addToCart = asyncHandler(async (req, res) => {
 export const getCart = asyncHandler(async (req, res) => {
   const cart = await Cart.findOne({ user: req.user._id }).populate(
     "items.product",
-    "name price image originalPrice",
+    "name price images stock",
   );
 
   if (!cart) return res.json({ items: [], totalAmount: 0 });
@@ -90,7 +90,7 @@ export const updateQuantity = asyncHandler(async (req, res) => {
 
   await recalculateTotal(cart);
   await cart.save();
-  await cart.populate("items.product", "name price image originalPrice");
+  await cart.populate("items.product", "name price images stock");
 
   res.json(cart);
 });
@@ -111,7 +111,7 @@ export const removeFromCart = asyncHandler(async (req, res) => {
 
   await recalculateTotal(cart);
   await cart.save();
-  await cart.populate("items.product", "name price image originalPrice");
+  await cart.populate("items.product", "name price images stock");
 
   res.json(cart);
 });
@@ -158,7 +158,7 @@ export const mergeCart = asyncHandler(async (req, res) => {
 
   await recalculateTotal(cart);
   await cart.save();
-  await cart.populate("items.product", "name price image originalPrice");
+  await cart.populate("items.product", "name price images stock");
 
   res.json(cart);
 });
