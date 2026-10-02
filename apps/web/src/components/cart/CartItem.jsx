@@ -7,18 +7,13 @@ export default function CartItem({
   actionLoading,
 }) {
   const product = item.product;
-  const discount = product.originalPrice
-    ? Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) * 100,
-      )
-    : 0;
 
   return (
     <div className="bg-white rounded-sm p-5 flex gap-5 items-start">
       <div className="w-24 h-24 bg-gray-50 rounded flex items-center justify-center shrink-0 overflow-hidden border border-gray-100">
-        {product.image ? (
+        {product.images?.[0] ? (
           <img
-            src={product.image}
+            src={product.images[0]}
             alt={product.name}
             className="w-full h-full object-contain p-1"
           />
@@ -35,16 +30,6 @@ export default function CartItem({
           <span className="text-lg font-semibold text-gray-900">
             ₹{product.price?.toLocaleString()}
           </span>
-          {product.originalPrice && (
-            <span className="text-sm text-gray-400 line-through">
-              ₹{product.originalPrice?.toLocaleString()}
-            </span>
-          )}
-          {discount > 0 && (
-            <span className="text-sm text-green-600 font-medium">
-              {discount}% off
-            </span>
-          )}
         </div>
 
         <div className="flex items-center gap-3">

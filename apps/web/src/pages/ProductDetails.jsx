@@ -52,12 +52,6 @@ export default function ProductDetails() {
     }
   };
 
-  const discount = product?.originalPrice
-    ? Math.round(
-        ((product.originalPrice - product.price) / product.originalPrice) * 100,
-      )
-    : 0;
-
   return (
     <div className="bg-[#f1f3f6] min-h-screen py-4">
       <Container>
@@ -85,9 +79,9 @@ export default function ProductDetails() {
             <div className="grid md:grid-cols-2 gap-10 items-start">
               {/* ── Left: Image ── */}
               <div className="bg-gray-50 rounded-xl h-96 flex items-center justify-center overflow-hidden border border-gray-100">
-                {product.image ? (
+                {product.images?.[0] ? (
                   <img
-                    src={product.image}
+                    src={product.images[0]}
                     alt={product.name}
                     className="h-full w-full object-contain p-6"
                   />
@@ -131,22 +125,11 @@ export default function ProductDetails() {
                     <span className="text-3xl font-semibold text-gray-900">
                       ₹{product.price?.toLocaleString()}
                     </span>
-                    {product.originalPrice && (
-                      <span className="text-base text-gray-400 line-through">
-                        ₹{product.originalPrice?.toLocaleString()}
-                      </span>
-                    )}
-                    {discount > 0 && (
-                      <span className="text-base font-medium text-green-600">
-                        {discount}% off
-                      </span>
-                    )}
                   </div>
                   <p className="text-xs text-gray-400 mt-1">
                     Inclusive of all taxes
                   </p>
                 </div>
-
                 <p className="text-sm text-gray-600 leading-relaxed mb-5">
                   {product.description}
                 </p>

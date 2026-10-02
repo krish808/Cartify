@@ -21,9 +21,9 @@ function ProductCard({ product }) {
       onClick={() => navigate(`/products/${product._id}`)}
     >
       <div className="w-full h-44 bg-gray-50 rounded flex items-center justify-center mb-3 overflow-hidden">
-        {product.image ? (
+        {product.images?.[0] ? (
           <img
-            src={product.image}
+            src={product.images[0]}
             alt={product.name}
             className="h-full w-full object-contain"
           />
@@ -56,9 +56,9 @@ function ProductCard({ product }) {
         <span className="text-base font-medium text-gray-900">
           ₹{product.price.toLocaleString()}
         </span>
-        {product.originalPrice && (
+        {product.stock && (
           <span className="text-xs text-gray-400 line-through">
-            ₹{product.originalPrice.toLocaleString()}
+            ₹{product.stock.toLocaleString()}
           </span>
         )}
         {discount > 0 && (
