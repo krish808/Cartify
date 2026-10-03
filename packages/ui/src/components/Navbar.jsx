@@ -60,7 +60,7 @@ export default function Navbar({
           className="shrink-0 flex flex-col items-start cursor-pointer"
         >
           <span className="text-white text-xl font-bold tracking-wide leading-none">
-            Cartify
+            Carty
           </span>
           <span className="text-[10px] text-yellow-300 italic font-medium leading-none mt-0.5">
             Explore{" "}
