@@ -89,9 +89,9 @@ export default function DealOfTheDay() {
                   className="flex flex-col items-center px-3 py-4 hover:bg-gray-50 transition"
                 >
                   <div className="w-full h-36 bg-gray-50 rounded flex items-center justify-center mb-3 overflow-hidden">
-                    {product.image ? (
+                    {product.images?.[0] ? (
                       <img
-                        src={product.image}
+                        src={product.images[0]}
                         alt={product.name}
                         className="h-full w-full object-contain"
                       />
