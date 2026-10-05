@@ -13,6 +13,7 @@ import { useEffect, useMemo } from "react";
 import Register from "./pages/Register";
 import { Toaster, toast } from "react-hot-toast";
 import Checkout from "./pages/Checkout";
+import { MyOrders } from "./pages/MyOrders";
 
 export default function App() {
   const dispatch = useDispatch();
@@ -119,6 +120,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Checkout />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <MyOrders />
             </ProtectedRoute>
           }
         />
