@@ -2,7 +2,9 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { registerUser, loginUser, logoutUser } from "../services/authService";
 import { mergeCart, clearCartState } from "./cartSlice"; // ✅ clearCartState not clearCart
 import { clearGuestCart } from "./guestCartSlice"; // ✅ added
+import { updateMyProfile } from "../services/userService";
 import toast from "react-hot-toast";
+
 
  const mergeGuestCartIfAny = async(dispatch)=>{
   const guestItems = JSON.parse(localStorage.getItem("guestCart") ||"[]")
@@ -21,6 +23,20 @@ import toast from "react-hot-toast";
     localStorage.removeItem("guestCart")
   }
  }
+
+ export const updateProfile = createAsyncThunk(
+  "auth/updateProfile", async(updates,{rejectWithValue})=>{
+    try{
+      const data = await updateMyProfile(updates)
+
+      localStorage.setItem("user",JSON.stringify(data.user))
+      toast.success("Profile updated")
+      return data.user
+    }catch(err ){
+      return rejectWithValue(err.response?.data?.message || "Failed to update profile")
+    }
+  }
+ )
 
 // REGISTER
 export const register = createAsyncThunk(
@@ -78,7 +94,7 @@ export const logout = createAsyncThunk(
     } finally {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
-      localStorage.removeItem("guestCart");
+       localStorage.removeItem("guestCart");
       dispatch(clearCartState());
       dispatch(clearGuestCart()); 
     }
@@ -93,16 +109,21 @@ const authSlice = createSlice({
     loading: false,
     error: null,
     sessionExpired: false, // ✅ added to track session expiry
+    profileLoading:false,
+    profileError:null
   },
   reducers: {
     sessionExpired: (state) => {
       state.user = null;
-      state.isAuthenticated = false;
+      state.isAuthenticated = false; 
       state.sessionExpired = true;
     },
     clearSessionExpired: (state) => {
       state.sessionExpired = false;
     },
+    clearProfileError:(state)=>{
+      state.profileError=null
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -122,6 +143,18 @@ const authSlice = createSlice({
       .addCase(login.pending, (state) => {
         state.loading = true;
         state.error = null;
+      })
+      .addCase(updateProfile.pending, (state) => {
+        state.profileLoading = true;
+        state.profileError = null;
+      })
+      .addCase(updateProfile.fulfilled, (state, action) => {
+        state.profileLoading = false;
+        state.user = action.payload;
+      })
+      .addCase(updateProfile.rejected, (state, action) => {
+        state.profileLoading = false;
+        state.profileError = action.payload;
       })
       .addCase(login.fulfilled, (state, action) => {
         state.loading = false;
@@ -150,5 +183,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { sessionExpired, clearSessionExpired } = authSlice.actions;
+export const { sessionExpired, clearSessionExpired,clearProfileError } = authSlice.actions;
+
 export default authSlice.reducer;

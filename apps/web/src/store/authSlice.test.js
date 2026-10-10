@@ -1,6 +1,6 @@
  import { describe, it, expect, vi, beforeEach } from "vitest";
 import { configureStore } from "@reduxjs/toolkit";
-import authReducer, { register, login } from "./authSlice";
+import authReducer, { register, login, updateProfile, clearProfileError } from "./authSlice";
 import cartReducer from "./cartSlice";
 import guestCartReducer from "./guestCartSlice";
 
@@ -19,12 +19,17 @@ vi.mock("../services/cartServices.js", () => ({
   mergeCartItems: vi.fn(),
 }));
 
+vi.mock("../services/userService.js", () => ({
+  updateMyProfile: vi.fn(),
+}));
+
 vi.mock("react-hot-toast", () => ({
   default: { success: vi.fn(), error: vi.fn() },
 }));
 
 import { registerUser, loginUser } from "../services/authService";
 import { mergeCartItems } from "../services/cartServices.js";
+import { updateMyProfile } from "../services/userService.js";
 
 const buildStore = () =>
   configureStore({
@@ -122,5 +127,92 @@ describe("authSlice - guest cart merging", () => {
 
     expect(store.getState().guestCart.items).toEqual([]);
     expect(localStorage.getItem("guestCart")).toBeNull();
+  });
+});
+
+describe("authSlice - updateProfile", () => {
+  const existingUser = {
+    _id: "u1",
+    name: "Old Name",
+    email: "old@example.com",
+    role: "customer",
+  };
+
+  const buildStoreWithUser = () =>
+    configureStore({
+      reducer: {
+        auth: authReducer,
+        cart: cartReducer,
+        guestCart: guestCartReducer,
+      },
+      preloadedState: {
+        auth: {
+          user: existingUser,
+          isAuthenticated: true,
+          loading: false,
+          error: null,
+          sessionExpired: false,
+          profileLoading: false,
+          profileError: null,
+        },
+      },
+    });
+
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+  });
+
+  it("updates the user in state and localStorage on success", async () => {
+    const updated = { ...existingUser, name: "New Name" };
+    updateMyProfile.mockResolvedValue({ user: updated });
+
+    const store = buildStoreWithUser();
+    await store.dispatch(updateProfile({ name: "New Name" }));
+
+    expect(updateMyProfile).toHaveBeenCalledWith({ name: "New Name" });
+    expect(store.getState().auth.user).toEqual(updated);
+    expect(JSON.parse(localStorage.getItem("user"))).toEqual(updated);
+    expect(store.getState().auth.profileLoading).toBe(false);
+  });
+
+  it("keeps the old user and stores the server message on failure", async () => {
+    localStorage.setItem("user", JSON.stringify(existingUser));
+    updateMyProfile.mockRejectedValue({
+      response: { data: { message: "Email is already in use" } },
+    });
+
+    const store = buildStoreWithUser();
+    await store.dispatch(updateProfile({ email: "taken@example.com" }));
+
+    const { auth } = store.getState();
+    expect(auth.user).toEqual(existingUser);
+    expect(auth.profileError).toBe("Email is already in use");
+    expect(auth.profileLoading).toBe(false);
+    expect(JSON.parse(localStorage.getItem("user"))).toEqual(existingUser);
+  });
+
+  it("does not touch the login form's loading/error fields", async () => {
+    updateMyProfile.mockRejectedValue({
+      response: { data: { message: "boom" } },
+    });
+
+    const store = buildStoreWithUser();
+    const pending = store.dispatch(updateProfile({ name: "Some Name" }));
+
+    expect(store.getState().auth.profileLoading).toBe(true);
+    expect(store.getState().auth.loading).toBe(false);
+
+    await pending;
+    expect(store.getState().auth.error).toBeNull();
+  });
+
+  it("clearProfileError resets the error", () => {
+    const base = authReducer(undefined, { type: "@@init" });
+    const state = authReducer(
+      { ...base, profileError: "old error" },
+      clearProfileError(),
+    );
+    expect(state.profileError).toBeNull();
   });
 });
