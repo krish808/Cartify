@@ -16,6 +16,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import checkoutRoutes from "./routes/checkoutRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
+import userRoutes from "./routes/userRoutes.js"
 
 const app = express();
 
@@ -49,6 +50,8 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/checkout", checkoutRoutes);
 app.use("/api/coupons", couponRoutes);
+
+app.use("/api/users",userRoutes)
 
 app.use(errorHandler);
 
